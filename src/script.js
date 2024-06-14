@@ -1,92 +1,87 @@
-import * as THREE from "three";
 import "./styles.css";
-// console.log(THREE);
+import * as THREE from "three";
+import {
+  MapControls,
+  OrbitControls,
+} from "three/examples/jsm/controls/OrbitControls";
 
-// 1) Scene
-// 2) Objects
-// 3) Camera
-// 4) Renderer
-
-// Scene
+//Scene
 const scene = new THREE.Scene();
 
-// Group
-const group = new THREE.Group();
+//Resizing
+window.addEventListener("resize", () => {
+  //Update Size
+  aspect.width = window.innerWidth;
+  aspect.height = window.innerHeight;
+
+  //New Aspect Ratio
+  camera.aspect = aspect.width / aspect.height;
+  camera.updateProjectionMatrix();
+
+  //New RendererSize
+  renderer.setSize(aspect.width, aspect.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+//Loading Manager
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => {
+  console.log("start");
+};
+loadingManager.onLoad = () => {
+  console.log("loading...");
+};
+loadingManager.onProgress = () => {
+  console.log("progress");
+};
+loadingManager.onError = () => {
+  console.log("error!!");
+};
+
+//texture loader
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const colorTexture = textureLoader.load("texture/color.jpg");
+const colorTwo = textureLoader.load("/texture/bump.jpg");
+console.log(colorTexture);
 
 //Mesh
-const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
-const material = new THREE.MeshBasicMaterial({
-  color: "purple",
-  wireframe: true,
-});
+const geometry = new THREE.PlaneBufferGeometry(1, 1);
+const material = new THREE.MeshBasicMaterial({ map: colorTexture });
 const mesh = new THREE.Mesh(geometry, material);
-// mesh.position.x = 1;
-// mesh.position.y = 3;
-mesh.position.z = -4;
-// mesh.scale.x = 1;
-// // mesh.scale.y = 2;
-// mesh.rotation.x = Math.PI * 0.25;
-// mesh.rotation.y = Math.PI * 1.2; // 1/8 turn
-// scene.add(mesh);
+scene.add(mesh);
 
-//Mesh two
-const geometryTwo = new THREE.BoxGeometry(1, 1, 1);
-// const geometryTwo = new THREE.BoxBufferGeometry(1, 1, 1);
-const materialTwo = new THREE.MeshBasicMaterial({ color: "green" });
-const meshTwo = new THREE.Mesh(geometryTwo, materialTwo);
-meshTwo.position.y = 2;
-meshTwo.position.z = -5;
-// scene.add(meshTwo);
-
-// mesh geometry types
-// THREE.BoxGeometry
-// THREE.CapsuleGeometry
-// THREE.CircleGeometry
-// THREE.ConeGeometry
-// THREE.CylinderGeometry
-// THREE.PlaneGeometry
-// THREE.SphereGeometry
-// THREE.TorusGeometry
-
-const geometrythree = new THREE.BufferGeometry();
-const verticesArray = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0]);
-
-const positionAttribute = new THREE.BufferAttribute(verticesArray, 3);
-geometrythree.setAttribute("position", positionAttribute);
-console.log(geometrythree);
-const meshThree = new THREE.Mesh(geometrythree, materialTwo);
-meshThree.position.x = 1;
-meshThree.position.y = 1;
-meshThree.position.z = 1;
-
-group.add(mesh, meshTwo, meshThree);
-group.position.x = 1;
-scene.add(group);
-//AxesHelper
-const axesHelper = new THREE.AxesHelper(2);
-scene.add(axesHelper);
-
-//camera
+//Camera
 const aspect = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-
-const camera = new THREE.PerspectiveCamera(
-  75, //field of view
-  aspect.width / aspect.height, //aspect ration
-  1, //near, default = 1
-  2000 //far, default = 2000
-);
-camera.position.z = 4;
-camera.position.x = 1;
-camera.position.y = 1;
-
+const camera = new THREE.PerspectiveCamera(75, aspect.width / aspect.height);
+camera.position.z = 1;
 scene.add(camera);
 
-//renderer
+//Renderer
 const canvas = document.querySelector(".draw");
-const renderer = new THREE.WebGLRenderer({ canvas: canvas });
-
+const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(aspect.width, aspect.height);
-renderer.render(scene, camera);
+
+//OrbitControls
+const orbitControls = new OrbitControls(camera, canvas);
+orbitControls.enableDamping = true;
+
+//Clock Class
+const clock = new THREE.Clock();
+
+const animate = () => {
+  //GetElapsedTime
+  const elapsedTime = clock.getElapsedTime();
+
+  //Update Controls
+  orbitControls.update();
+
+  //Renderer
+  renderer.render(scene, camera);
+
+  //RequestAnimationFrame
+  window.requestAnimationFrame(animate);
+};
+animate();
