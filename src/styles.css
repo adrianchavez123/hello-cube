@@ -4,12 +4,13 @@
 }
 body{
     background-color: black;
-    /* overflow: hidden; */
+   /* overflow: hidden; */
 }
 
 .draw{
     position: fixed;
     left: 0;
     top:0;
-    outline: none;
+    outline: none; background: linear-gradient(0deg, rgb(198, 223, 243), rgb(116,152,169) 60%,rgb(62,106,125))
+    
 }

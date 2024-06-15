@@ -23,52 +23,50 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
-// Texture loadir
-const textureLoader = new THREE.TextureLoader();
-const particleTexture = textureLoader.load("texture/alphaSnow.jpg");
-//Mesh
-const geometry = new THREE.BufferGeometry();
-const verticesAmount = 1000;
-const positionArray = new Float32Array(verticesAmount * 3); // We need 3000 slots
-for (let i = 0; i < verticesAmount * 3; i++) {
-  positionArray[i] = (Math.random() - 0.5) * 4;
-}
-geometry.setAttribute("position", new THREE.BufferAttribute(positionArray, 3));
-const material = new THREE.PointsMaterial();
-material.size = 0.02;
-material.transparent = true;
-material.depthTest = false;
-material.alphaMap = particleTexture;
+//Loading Manager
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => {
+  console.log("start");
+};
+loadingManager.onLoad = () => {
+  console.log("loading...");
+};
+loadingManager.onProgress = () => {
+  console.log("progress");
+};
+loadingManager.onError = () => {
+  console.log("error!!");
+};
 
-const points = new THREE.Points(geometry, material);
-scene.add(points);
+//texture loader
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const colorTexture = textureLoader.load("texture/color.jpg");
+const colorTwo = textureLoader.load("/texture/bump.jpg");
+console.log(colorTexture);
+
+//Mesh
+const geometry = new THREE.PlaneBufferGeometry(1, 1);
+const material = new THREE.MeshBasicMaterial({ map: colorTexture });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
 
 //Camera
 const aspect = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-const camera = new THREE.PerspectiveCamera(
-  75,
-  aspect.width / aspect.height,
-  0.01,
-  1000
-);
+const camera = new THREE.PerspectiveCamera(75, aspect.width / aspect.height);
 camera.position.z = 1;
 scene.add(camera);
 
 //Renderer
 const canvas = document.querySelector(".draw");
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(aspect.width, aspect.height);
 
 //OrbitControls
 const orbitControls = new OrbitControls(camera, canvas);
 orbitControls.enableDamping = true;
-orbitControls.enableZoom = false;
-orbitControls.enableRotate = false;
-orbitControls.autoRotate = true;
-orbitControls.autoRotateSpeed = 0.2;
 
 //Clock Class
 const clock = new THREE.Clock();
@@ -76,8 +74,7 @@ const clock = new THREE.Clock();
 const animate = () => {
   //GetElapsedTime
   const elapsedTime = clock.getElapsedTime();
-  // points.rotation.y = elapsedTime * 0.05;
-  // points.rotation.x = elapsedTime * 0.05;
+
   //Update Controls
   orbitControls.update();
 
